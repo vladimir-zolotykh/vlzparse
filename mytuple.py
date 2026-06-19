@@ -6,7 +6,7 @@ from operator import itemgetter
 
 class TupleMeta(type):
     def __init__(cls, name, bases, namespace):
-        super().__init__(cls, name, bases, namespace)
+        super().__init__(name, bases, namespace)
         fields = namespace.get("_fields", [])
         for n, name in enumerate(fields):
             setattr(cls, name, property(itemgetter(n)))
@@ -14,7 +14,7 @@ class TupleMeta(type):
 
 class Tuple(tuple, metaclass=TupleMeta):
     def __new__(cls, *args):
-        if len((n := len(cls._fields))) != len(args):
+        if (n := len(cls._fields)) != len(args):
             raise TypeError(f"{cls} gets exactly {n} arguments")
         return super().__new__(cls, args)
 
