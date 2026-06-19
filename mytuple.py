@@ -31,3 +31,7 @@ if __name__ == "__main__":
     p = Person("Bob", 37, 12000)
     print(repr(p))
     print(as_csv(p))
+    try:
+        Person("Jim", 38)
+    except TypeError as exc:
+        print(exc)
