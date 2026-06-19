@@ -12,17 +12,9 @@ class Token:
     par: str
 
 
-class TokensDict(dict):
-    def __init__(self, tokens):
-        for key, val in tokens.items():
-            self[key] = val
-
-    def __setitem__(self, key, val):
-        super().__setitem__(key, rf"(?P<{key}>{val})")
-
-
-tokens = TokensDict(
-    {
+tokens = {
+    key: rf"(?P<{key}>{val})"
+    for key, val in {
         "NAME": r"[A-Za-z][A-Za-z0-9_]*",
         "PLUS": r"\+",
         "MINUS": r"\-",
@@ -33,7 +25,8 @@ tokens = TokensDict(
         "RPAREN": r"\)",
         "NUM": r"\d+",
         "WS": r"\s+",
-    }
-)
+    }.items()
+}
+
 if __name__ == "__main__":
     print(tokens)
