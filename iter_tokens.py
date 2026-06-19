@@ -33,8 +33,7 @@ def iter_tokens(expr: str) -> Iterator[Token]:
     pat = "|".join(tokens.values())
     for match in re.finditer(pat, expr):
         name = match.lastgroup
-        if name != "WS":
-            assert isinstance(name, str)
+        if not (name is None or name == "WS"):
             yield Token(name, match.group(0))
 
 
