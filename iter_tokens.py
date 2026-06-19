@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+from typing import Iterator
 import re
 from dataclasses import dataclass
 
@@ -9,7 +10,6 @@ from dataclasses import dataclass
 class Token:
     name: str
     val: str | float
-    par: str
 
 
 tokens = {
@@ -28,5 +28,15 @@ tokens = {
     }.items()
 }
 
+
+def iter_tokens(expr: str) -> Iterator[Token]:
+    pat = "|".join(tokens.values())
+    for match in re.finditer(pat, expr):
+        name = match.lastgroup
+        if name != "WS":
+            yield Token(name, match.group(0))
+
+
 if __name__ == "__main__":
-    print(tokens)
+    for t in iter_tokens("2 + (3 * 4) + 5"):
+        print(t)
