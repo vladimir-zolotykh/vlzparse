@@ -1,9 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+from functools import wraps
 from typing import Iterator
 import iter_tokens as T
 import node as N
+
+
+def _trace(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        self = args[0]
+        print(f"[{func.__name__}] {self.token = }")
+        res = func(*args, **kwargs)
+        return res
+
+    return wrapper
 
 
 class Parser:
@@ -25,6 +37,7 @@ class Parser:
     def _consume(self) -> None:
         self.token = next(self.tokens)
 
+    @_trace
     def expr(self) -> N.Node:
         res: N.Node = self.term()
         while (op := self._advance()) and op in ("PLUS", "MINUS"):
@@ -33,6 +46,7 @@ class Parser:
             res = N.Plus(res, right) if op == "PLUS" else N.Minus(res, right)
         return res
 
+    @_trace
     def term(self) -> N.Node:
         res: N.Node = self.factor()
         while (op := self._advance()) and op in ("MUL", "DIV"):
@@ -41,6 +55,7 @@ class Parser:
             res = N.Mul(res, right) if op == "MUL" else N.Div(res, right)
         return res
 
+    @_trace
     def factor(self) -> N.Node:
         res: T.Node
         if self.token == "LPAREN":
