@@ -11,6 +11,14 @@ class Token:
     name: str
     val: str | float
 
+    def __eq__(self, other) -> bool:
+        if isinstance(other, str):
+            return self.name == other
+        elif isinstance(other, Token):
+            return self.name == other.name and self.val == other.val
+        else:
+            return NotImplemented
+
 
 tokens = {
     key: rf"(?P<{key}>{val})"
