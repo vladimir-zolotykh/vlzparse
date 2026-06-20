@@ -9,8 +9,8 @@ from dataclasses import dataclass
 @dataclass
 class Node:
     val: Any
-    left: Node
-    right: Node
+    left: Node = None
+    right: Node = None
 
 
 class Num(Node):

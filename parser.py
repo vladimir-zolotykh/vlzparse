@@ -25,7 +25,7 @@ class Parser:
     def _consume(self) -> None:
         self.token = next(self.tokens)
 
-    def expr(self) -> T.Node:
+    def expr(self) -> N.Node:
         res: N.Node = self.term()
         while (op := self._advance()) and op in ("PLUS", "MINUS"):
             self._consume()
@@ -33,7 +33,7 @@ class Parser:
             res = N.Plus(res, right) if op == "PLUS" else N.Minus(res, right)
         return res
 
-    def term(self) -> T.Node:
+    def term(self) -> N.Node:
         res: N.Node = self.factor()
         while (op := self._advance()) and op in ("MUL", "DIV"):
             self._consume()
@@ -41,7 +41,7 @@ class Parser:
             res = N.Mul(res, right) if op == "MUL" else N.Div(res, right)
         return res
 
-    def factor(self) -> T.Node:
+    def factor(self) -> N.Node:
         res: T.Node
         if self.token == "LPAREN":
             res = self.expr()
@@ -59,3 +59,4 @@ class Parser:
 
 if __name__ == "__main__":
     n = Parser().parse("2 + (3 * 4) + 5")
+    print(n)
