@@ -15,8 +15,9 @@ def _trace(skip: bool = True):
         @wraps(func)
         def wrapper(*args, **kwargs):
             self = args[0]
-            print(f"[{func.__name__}] {self.token = }")
+            print(f"<<< {func.__name__} {self.token = }")
             res = func(*args, **kwargs)
+            print(f">>>{func.__name__} {self.token = }")
             return res
 
         return wrapper
@@ -46,7 +47,7 @@ class Parser:
     @_trace()
     def expr(self) -> N.Node:
         res: N.Node = self.term()
-        while (op := self._advance()) and op in ("PLUS", "MINUS"):
+        while (op := self.token) and op in ("PLUS", "MINUS"):
             self._consume()
             right = self.term()
             res = N.Plus(res, right) if op == "PLUS" else N.Minus(res, right)
@@ -55,7 +56,7 @@ class Parser:
     @_trace()
     def term(self) -> N.Node:
         res: N.Node = self.factor()
-        while (op := self._advance()) and op in ("MUL", "DIV"):
+        while (op := self.token) and op in ("MUL", "DIV"):
             self._consume()
             right = self.factor()
             res = N.Mul(res, right) if op == "MUL" else N.Div(res, right)
@@ -65,6 +66,7 @@ class Parser:
     def factor(self) -> N.Node:
         res: T.Node
         if self.token == "LPAREN":
+            self._consume()
             res = self.expr()
             self._expect("RPAREN")
         else:
