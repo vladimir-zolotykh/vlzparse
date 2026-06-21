@@ -1,28 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
-from functools import wraps
 from typing import Iterator
 import iter_tokens as T
 import node as N
-
-
-def _trace(skip: bool = True):
-    def decorate(func):
-        if skip:
-            return func
-
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            self = args[0]
-            print(f"<<< {func.__name__} {self.token = }")
-            res = func(*args, **kwargs)
-            print(f">>>{func.__name__} {self.token = }")
-            return res
-
-        return wrapper
-
-    return decorate
 
 
 class Parser:
@@ -44,7 +25,6 @@ class Parser:
     def _consume(self) -> None:
         self.token = next(self.tokens)
 
-    @_trace()
     def expr(self) -> N.Node:
         res: N.Node = self.term()
         while (op := self.token) and op in ("PLUS", "MINUS"):
@@ -53,7 +33,6 @@ class Parser:
             res = N.Plus(res, right) if op == "PLUS" else N.Minus(res, right)
         return res
 
-    @_trace()
     def term(self) -> N.Node:
         res: N.Node = self.factor()
         while (op := self.token) and op in ("MUL", "DIV"):
@@ -62,7 +41,6 @@ class Parser:
             res = N.Mul(res, right) if op == "MUL" else N.Div(res, right)
         return res
 
-    @_trace()
     def factor(self) -> N.Node:
         res: T.Node
         if self.token == "LPAREN":
@@ -81,5 +59,7 @@ class Parser:
 
 
 if __name__ == "__main__":
-    n = Parser().parse("2 + (3 * 4) + 5")
+    expr = "2 + (3 * 4) + 5"
+    print(f"{expr = }, {eval(expr) = }")
+    n = Parser().parse(expr)
     print(n)
