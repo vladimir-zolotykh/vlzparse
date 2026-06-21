@@ -14,7 +14,6 @@ import node as N
         (
             "2+5",
             N.Plus(
-                # "+",
                 N.Num("2"),
                 N.Num("5"),
             ),
@@ -22,7 +21,6 @@ import node as N
         (
             "3*4",
             N.Mul(
-                # "*",
                 N.Num("3"),
                 N.Num("4"),
             ),
@@ -30,10 +28,8 @@ import node as N
         (
             "3+4*5",
             N.Plus(
-                # "+",
                 N.Num("3"),
                 N.Mul(
-                    # "*",
                     N.Num("4"),
                     N.Num("5"),
                 ),
@@ -42,9 +38,7 @@ import node as N
         (
             "(3+4)*5",
             N.Mul(
-                # "*",
                 N.Plus(
-                    # "+",
                     N.Num("3"),
                     N.Num("4"),
                 ),
@@ -54,12 +48,9 @@ import node as N
         (
             "2+(3*4)+5",
             N.Plus(
-                # "+",
                 N.Plus(
-                    # "+",
                     N.Num("2"),
                     N.Mul(
-                        # "*",
                         N.Num("3"),
                         N.Num("4"),
                     ),
