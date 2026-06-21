@@ -9,29 +9,33 @@ from dataclasses import dataclass
 @dataclass
 class Node:
     val: Any
-    left: Node = None
-    right: Node = None
 
 
+@dataclass
 class Num(Node):
-    pass
+    def __repr__(self):
+        return f"Num({self.val})"
 
 
 @dataclass
 class BinaryOp(Node):
-    pass
+    left: Node | None = None
+    right: Node | None = None
 
 
 class Plus(BinaryOp):
-    pass
+    def __repr__(self):
+        return f"Plus({self.left}, {self.right})"
 
 
 class Minus(BinaryOp):
-    pass
+    def __repr__(self):
+        return f"Minus({self.left}, {self.right})"
 
 
 class Mul(BinaryOp):
-    pass
+    def __repr__(self):
+        return f"Mul({self.left}, {self.right})"
 
 
 class Div(BinaryOp):

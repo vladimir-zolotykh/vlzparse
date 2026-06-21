@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
-from typing import Iterator
+from typing import Iterator, Any
 import re
 from dataclasses import dataclass
 
@@ -11,7 +11,7 @@ class Token:
     name: str
     val: str | float
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, str):
             return self.name == other
         elif isinstance(other, Token):
