@@ -22,20 +22,20 @@ class BinaryOp(Node):
     left: Node | None = None
     right: Node | None = None
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.left}, {self.right})"
+
 
 class Plus(BinaryOp):
-    def __repr__(self):
-        return f"Plus({self.left}, {self.right})"
+    pass
 
 
 class Minus(BinaryOp):
-    def __repr__(self):
-        return f"Minus({self.left}, {self.right})"
+    pass
 
 
 class Mul(BinaryOp):
-    def __repr__(self):
-        return f"Mul({self.left}, {self.right})"
+    pass
 
 
 class Div(BinaryOp):
