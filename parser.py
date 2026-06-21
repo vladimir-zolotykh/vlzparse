@@ -30,7 +30,7 @@ class Parser:
         while (op := self.token) and op in ("PLUS", "MINUS"):
             self._consume()
             right = self.term()
-            res = N.Plus("+", res, right) if op == "PLUS" else N.Minus("-", res, right)
+            res = N.Plus(res, right) if op == "PLUS" else N.Minus(res, right)
         return res
 
     def term(self) -> N.Node:
@@ -38,7 +38,7 @@ class Parser:
         while (op := self.token) and op in ("MUL", "DIV"):
             self._consume()
             right = self.factor()
-            res = N.Mul("*", res, right) if op == "MUL" else N.Div("/", res, right)
+            res = N.Mul(res, right) if op == "MUL" else N.Div(res, right)
         return res
 
     def factor(self) -> N.Node:

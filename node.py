@@ -26,17 +26,22 @@ class BinaryOp(Node):
         return f"{self.__class__.__name__}({self.left}, {self.right})"
 
 
-class Plus(BinaryOp):
-    pass
+class _BinaryOp(BinaryOp):
+    def __init__(self, left, right):
+        super().__init__(self.op, left, right)
 
 
-class Minus(BinaryOp):
-    pass
+class Plus(_BinaryOp):
+    op: str = "+"
 
 
-class Mul(BinaryOp):
-    pass
+class Minus(_BinaryOp):
+    op: str = "-"
 
 
-class Div(BinaryOp):
-    pass
+class Mul(_BinaryOp):
+    op: str = "*"
+
+
+class Div(_BinaryOp):
+    op: str = "/"
