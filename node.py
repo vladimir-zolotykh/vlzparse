@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 from __future__ import annotations
-from typing import Any
+from typing import Any, ClassVar
 from dataclasses import dataclass
 
 
@@ -27,21 +27,23 @@ class BinaryOp(Node):
 
 
 class _BinaryOp(BinaryOp):
+    op: ClassVar[str]
+
     def __init__(self, left, right):
         super().__init__(self.op, left, right)
 
 
 class Plus(_BinaryOp):
-    op: str = "+"
+    op = "+"
 
 
 class Minus(_BinaryOp):
-    op: str = "-"
+    op = "-"
 
 
 class Mul(_BinaryOp):
-    op: str = "*"
+    op = "*"
 
 
 class Div(_BinaryOp):
-    op: str = "/"
+    op = "/"
