@@ -57,14 +57,20 @@ class Parser:
     def parse(self, expr: str) -> N.Node:
         self.tokens: Iterator[T.Token] = T.iter_tokens(expr)
         self._advance()
-        return self.expr()
+        res = self.expr()
+        if self.token:
+            raise SyntaxError(f"{self.token} Unexpected trailing symbols")
+        return res
 
 
 if __name__ == "__main__":
-    expr = "2 + (3 * 4) + 5"
+    # expr = "2 + (3 * 4) + 5"
     # expr = "2 + 5"
     # expr = "3 * 4"
     # expr = "3 + 4 * 5"
-    print(f"{expr = }, {eval(expr) = }")
-    n = Parser().parse(expr)
+    expr = "1 2"
+    # print(f"{expr = }, {eval(expr) = }")
+    p = Parser()
+    n = p.parse(expr)
     print(n)
+    print(p.token)
