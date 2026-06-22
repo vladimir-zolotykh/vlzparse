@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 from typing import Iterator
+import pytest
 import iter_tokens as T
 import node as N
 
@@ -50,7 +51,7 @@ class Parser:
             res = self.expr()
             self._expect("RPAREN")
         else:
-            res = N.Num(self.token.val)
+            res = N.Num(float(self.token.val))
             self._advance()
         return res
 
@@ -61,6 +62,25 @@ class Parser:
         if self.token:
             raise SyntaxError(f"{self.token} Unexpected trailing symbols")
         return res
+
+
+@pytest.mark.parametrize(
+    ("expr", "res"),
+    [
+        ("2", N.Num(2)),
+        (
+            "2 + 3",
+            N.Plus(N.Num(2), N.Num(3)),
+        ),
+        (
+            "2 + (3 * 4) + 5",
+            N.Plus(N.Plus(N.Num(2), N.Mul(N.Num(3), N.Num(4))), N.Num(5)),
+        ),
+    ],
+)
+def test_parser(expr, res):
+    # assert repr(Parser().parse(expr)) == res
+    assert Parser().parse(expr) == res
 
 
 if __name__ == "__main__":
