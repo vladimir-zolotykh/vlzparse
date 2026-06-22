@@ -3,7 +3,6 @@
 # PYTHON_ARGCOMPLETE_OK
 from typing import Generic, TypeVar, cast, Callable
 
-# from functools import singledispatchmethod
 import node as N
 from parser import Parser
 
