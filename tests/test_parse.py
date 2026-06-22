@@ -9,29 +9,29 @@ import node as N
     [
         (
             "42",
-            N.Num("42"),
+            N.Num(42),
         ),
         (
             "2+5",
             N.Plus(
-                N.Num("2"),
-                N.Num("5"),
+                N.Num(2),
+                N.Num(5),
             ),
         ),
         (
             "3*4",
             N.Mul(
-                N.Num("3"),
-                N.Num("4"),
+                N.Num(3),
+                N.Num(4),
             ),
         ),
         (
             "3+4*5",
             N.Plus(
-                N.Num("3"),
+                N.Num(3),
                 N.Mul(
-                    N.Num("4"),
-                    N.Num("5"),
+                    N.Num(4),
+                    N.Num(5),
                 ),
             ),
         ),
@@ -39,23 +39,23 @@ import node as N
             "(3+4)*5",
             N.Mul(
                 N.Plus(
-                    N.Num("3"),
-                    N.Num("4"),
+                    N.Num(3),
+                    N.Num(4),
                 ),
-                N.Num("5"),
+                N.Num(5),
             ),
         ),
         (
             "2+(3*4)+5",
             N.Plus(
                 N.Plus(
-                    N.Num("2"),
+                    N.Num(2),
                     N.Mul(
-                        N.Num("3"),
-                        N.Num("4"),
+                        N.Num(3),
+                        N.Num(4),
                     ),
                 ),
-                N.Num("5"),
+                N.Num(5),
             ),
         ),
     ],
