@@ -79,7 +79,6 @@ class Parser:
     ],
 )
 def test_parser(expr, res):
-    # assert repr(Parser().parse(expr)) == res
     assert Parser().parse(expr) == res
 
 
