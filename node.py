@@ -19,8 +19,8 @@ class Num(Node):
 
 @dataclass
 class BinaryOp(Node):
-    left: Node | None = None
-    right: Node | None = None
+    left: Node
+    right: Node
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.left}, {self.right})"

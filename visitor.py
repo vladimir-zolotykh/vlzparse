@@ -30,16 +30,16 @@ class VisitorEval(Visitor[float]):
         return float(n.val)
 
     def visitPlus(self, n: N.Plus) -> float:
-        return self.visit(cast(N.Node, n.left)) + self.visit(cast(N.Node, n.right))
+        return self.visit(n.left) + self.visit(n.right)
 
     def visitMinus(self, n: N.Minus) -> float:
-        return self.visit(cast(N.Node, n.left)) - self.visit(cast(N.Node, n.right))
+        return self.visit(n.left) - self.visit(n.right)
 
     def visitMul(self, n: N.Mul) -> float:
-        return self.visit(cast(N.Node, n.left)) * self.visit(cast(N.Node, n.right))
+        return self.visit(n.left) * self.visit(n.right)
 
     def visitDiv(self, n: N.Div) -> float:
-        return self.visit(cast(N.Node, n.left)) / self.visit(cast(N.Node, n.right))
+        return self.visit(n.left) / self.visit(n.right)
 
 
 if __name__ == "__main__":
