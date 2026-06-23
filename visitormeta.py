@@ -13,7 +13,7 @@ class Register(dict):
     def __setitem__(self, key, val):
         # if key[:2] == '__' and key[-2:] == '__':
         #     super().__setitem__(key, val)
-        if key.startswith("visit") and callable(val):
+        if key == "visit" and callable(val):
             sig = inspect.signature(val)
             # parm = list[sig.parameters.values()][1]
             types_ = [p.annotation for p in sig.parameters.values()]
@@ -26,15 +26,15 @@ class Register(dict):
 class VisitorMeta(type):
 
     def __new__(mcls, clsname, bases, clsdict):
-        def visit(self, n: Node):
-            method_name = f"visis{type(n).__name__}"
-            if hasattr(self, method_name):
-                method = getattr(self, method_name)
-            else:
-                raise TypeError(f"{self.__class__} has no {method_name} method")
-            return method(n)
+        # def visit(self, n: Node):
+        #     method_name = f"visit{type(n).__name__}"
+        #     if hasattr(self, method_name):
+        #         method = getattr(self, method_name)
+        #     else:
+        #         raise TypeError(f"{self.__class__} has no {method_name} method")
+        #     return method(n)
 
-        clsdict["visit"] = visit
+        # clsdict["visit"] = visit
         return super().__new__(mcls, clsname, bases, clsdict)
 
     @classmethod
@@ -44,7 +44,17 @@ class VisitorMeta(type):
         return Register()
 
 
-class VisitorDispatch(metaclass=VisitorMeta):
+class Visitor:
+    def visit(self, n: Node):
+        self.method_name = f"visit{type(n).__name__}"
+        method = getattr(self, self.method_name, self.visit_generic)
+        return method(n)
+
+    def visit_generic(self, n: Node):
+        raise TypeError(f"{self.__class__} has not {method_name}")
+
+
+class VisitorDispatch(Visitor, metaclass=VisitorMeta):
     def visit(self, n: Num) -> float:
         return float(n.val)
 
@@ -64,4 +74,5 @@ class VisitorDispatch(metaclass=VisitorMeta):
 if __name__ == "__main__":
     expr = "2 + (3 * 4) + 5"
     print(f"{expr = }, {eval(expr) = }")
-    print(VisitorDispatch().visit(Parser().parse(expr)))
+    v = VisitorDispatch()
+    print(v.visit(Parser().parse(expr)))
