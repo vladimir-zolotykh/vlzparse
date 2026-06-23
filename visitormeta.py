@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 # flake8: noqa: F811
+# mypy: disable-error-code="no-redef"
+from typing import MutableMapping, Any
 import inspect
 from node import Node, Num, Plus, Minus, Mul, Div
 from parser import Parser
@@ -13,28 +15,32 @@ class Register(dict):
         #     super().__setitem__(key, val)
         if key.startswith("visit") and callable(val):
             sig = inspect.signature(val)
-            parm = list[sig.parameters.values()][1]
-            new_key = f"visit{parm.annotation.__name__}"  # visitNum
+            # parm = list[sig.parameters.values()][1]
+            types_ = [p.annotation for p in sig.parameters.values()]
+            new_key = f"visit{types_[1].__name__}"  # visitNum
             super().__setitem__(new_key, val)
         else:
             super().__setitem__(key, val)
 
 
 class VisitorMeta(type):
-    def visit(self, n: Node):
-        method_name = f"visis{type(n).__name__}"
-        if hasattr(self, method_name):
-            method = getattr(self, method_name)
-        else:
-            raise TypeError(f"{self.__class__} has no {method_name} method"
-        return method(n)
 
     def __new__(mcls, clsname, bases, clsdict):
+        def visit(self, n: Node):
+            method_name = f"visis{type(n).__name__}"
+            if hasattr(self, method_name):
+                method = getattr(self, method_name)
+            else:
+                raise TypeError(f"{self.__class__} has no {method_name} method")
+            return method(n)
+
         clsdict["visit"] = visit
         return super().__new__(mcls, clsname, bases, clsdict)
 
     @classmethod
-    def __prepare__(name, bases, **kwargs):
+    def __prepare__(
+        mcls, clsname: str, bases: tuple[type, ...], /, **kwargs: Any
+    ) -> MutableMapping[str, object]:
         return Register()
 
 
