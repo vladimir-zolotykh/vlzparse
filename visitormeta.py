@@ -11,11 +11,8 @@ from parser import Parser
 
 class Register(dict):
     def __setitem__(self, key, val):
-        # if key[:2] == '__' and key[-2:] == '__':
-        #     super().__setitem__(key, val)
         if key == "visit" and callable(val):
             sig = inspect.signature(val)
-            # parm = list[sig.parameters.values()][1]
             types_ = [p.annotation for p in sig.parameters.values()]
             new_key = f"visit{types_[1].__name__}"  # visitNum
             super().__setitem__(new_key, val)
@@ -24,19 +21,6 @@ class Register(dict):
 
 
 class VisitorMeta(type):
-
-    def __new__(mcls, clsname, bases, clsdict):
-        # def visit(self, n: Node):
-        #     method_name = f"visit{type(n).__name__}"
-        #     if hasattr(self, method_name):
-        #         method = getattr(self, method_name)
-        #     else:
-        #         raise TypeError(f"{self.__class__} has no {method_name} method")
-        #     return method(n)
-
-        # clsdict["visit"] = visit
-        return super().__new__(mcls, clsname, bases, clsdict)
-
     @classmethod
     def __prepare__(
         mcls, clsname: str, bases: tuple[type, ...], /, **kwargs: Any
@@ -45,13 +29,13 @@ class VisitorMeta(type):
 
 
 class Visitor:
-    def visit(self, n: Node):
+    def visit(self, n: Node) -> float:
         self.method_name = f"visit{type(n).__name__}"
         method = getattr(self, self.method_name, self.visit_generic)
         return method(n)
 
-    def visit_generic(self, n: Node):
-        raise TypeError(f"{self.__class__} has not {method_name}")
+    def visit_generic(self, n: Node) -> float:
+        raise TypeError(f"{self.__class__} has not {self.method_name}")
 
 
 class VisitorDispatch(Visitor, metaclass=VisitorMeta):
@@ -64,10 +48,10 @@ class VisitorDispatch(Visitor, metaclass=VisitorMeta):
     def visit(self, n: Minus) -> float:
         return self.visit(n.left) - self.visit(n.right)
 
-    def visit(self, n: Mul) -> float:
+    def visit(self, n: Mul) -> float:  # noqa: F811
         return self.visit(n.left) * self.visit(n.right)
 
-    def visit(self, n: Div) -> float:
+    def visit(self, n: Div) -> float:  # noqa: F811
         return self.visit(n.left) / self.visit(n.right)
 
 
