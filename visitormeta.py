@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
-from typing import MutableMapping, Any
+# mypy: disable-error-code="no-redef"
+from typing import MutableMapping, Any, TYPE_CHECKING
 import inspect
 from node import Node, Num, Plus, Minus, Mul, Div
 from parser import Parser
@@ -20,19 +21,16 @@ class Register(dict):
 
 class VisitorMeta(type):
     def __new__(mcls, name, bases, ns):
+        ns2 = dict(ns)
+        ns2["visit"] = mcls._visit
+        ns2["visit_generic"] = mcls._visit_generic
+        return super().__new__(mcls, name, bases, ns2)
 
-        ns["visit"] = mcls._visit
-        ns["visit_generic"] = mcls._visit_generic
-
-        return super().__new__(mcls, name, bases, dict(ns))
-
-    @staticmethod
     def _visit(self, n: Node) -> float:
         method_name = f"visit{type(n).__name__}"
         method = getattr(self, method_name, self.visit_generic)
         return method(n)
 
-    @staticmethod
     def _visit_generic(self, n: Node) -> float:
         raise TypeError(
             f"{self.__class__.__name__} has not " f"visit{type(n).__name__}"
@@ -45,31 +43,23 @@ class VisitorMeta(type):
         return Register()
 
 
-# class Visitor:
-#     def visit(self, n: Node) -> float:
-#         self.method_name = f"visit{type(n).__name__}"
-#         method = getattr(self, self.method_name, self.visit_generic)
-#         return method(n)
+if not TYPE_CHECKING:
 
-#     def visit_generic(self, n: Node) -> float:
-#         raise TypeError(f"{self.__class__} has not {self.method_name}")
+    class VisitorDispatch(metaclass=VisitorMeta):
+        def visit(self, n: Num) -> float:
+            return float(n.val)
 
+        def visit(self, n: Plus) -> float:  # noqa: F811
+            return self.visit(n.left) + self.visit(n.right)
 
-class VisitorDispatch(metaclass=VisitorMeta):
-    def visit(self, n: Num) -> float:
-        return float(n.val)
+        def visit(self, n: Minus) -> float:  # noqa: F811
+            return self.visit(n.left) - self.visit(n.right)
 
-    def visit(self, n: Plus) -> float:
-        return self.visit(n.left) + self.visit(n.right)
+        def visit(self, n: Mul) -> float:  # noqa: F811
+            return self.visit(n.left) * self.visit(n.right)
 
-    def visit(self, n: Minus) -> float:
-        return self.visit(n.left) - self.visit(n.right)
-
-    def visit(self, n: Mul) -> float:  # noqa: F811
-        return self.visit(n.left) * self.visit(n.right)
-
-    def visit(self, n: Div) -> float:  # noqa: F811
-        return self.visit(n.left) / self.visit(n.right)
+        def visit(self, n: Div) -> float:  # noqa: F811
+            return self.visit(n.left) / self.visit(n.right)
 
 
 if __name__ == "__main__":
