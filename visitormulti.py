@@ -11,12 +11,11 @@ from parser import Parser
 class Method:
     def __init__(self, name):
         self._name = name
-        self._types = tuple()
         self.methods = {}
 
     def register(self, func):
         sig = inspect.signature(func)
-        _types = tuple()
+        _types: tuple[type, ...] = tuple()
         defaults: int = 0
         for k, p in sig.parameters.items():
             if k == "self":
