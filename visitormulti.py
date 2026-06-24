@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+# mypy: disable-error-code=no-redef
 from typing import MutableMapping, Any
 from types import MethodType
 import inspect
@@ -67,19 +68,19 @@ class Evaluator(metaclass=MethodMeta):
         return float(n.val)
 
     def visit(self, n: Plus) -> float:  # noqa: F811
-        return self.visit(n.left) + self.visit(n.right)
+        return self.visit(n.left) + self.visit(n.right)  # type: ignore[arg-type]
 
     def visit(self, n: Minus) -> float:  # noqa: F811
-        return self.visit(n.left) - self.visit(n.right)
+        return self.visit(n.left) - self.visit(n.right)  # type: ignore[arg-type]
 
     def visit(self, n: Mul) -> float:  # noqa: F811
-        return self.visit(n.left) * self.visit(n.right)
+        return self.visit(n.left) * self.visit(n.right)  # type: ignore[arg-type]
 
     def visit(self, n: Div) -> float:  # noqa: F811
-        return self.visit(n.left) / self.visit(n.right)
+        return self.visit(n.left) / self.visit(n.right)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":
     expr = "2 + (3 * 4) + 5"
     print(f"{expr = }, {eval(expr) = }")
-    print(Evaluator().visit(Parser().parse(expr)))
+    print(Evaluator().visit(Parser().parse(expr)))  # type: ignore[arg-type]
