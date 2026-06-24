@@ -17,31 +17,30 @@ def test_num(ev):
 
 
 def test_plus(ev):
-    node = Plus("+", Num(2), Num(3))
+    node = Plus(Num(2), Num(3))
     assert ev.visit(node) == 5.0
 
 
 def test_minus(ev):
-    node = Minus("-", Num(7), Num(4))
+    node = Minus(Num(7), Num(4))
     assert ev.visit(node) == 3.0
 
 
 def test_mul(ev):
-    node = Mul("*", Num(6), Num(7))
+    node = Mul(Num(6), Num(7))
     assert ev.visit(node) == 42.0
 
 
 def test_div(ev):
-    node = Div("/", Num(8), Num(2))
+    node = Div(Num(8), Num(2))
     assert ev.visit(node) == 4.0
 
 
 def test_nested_expression(ev):
     # 2 + (3 * 4)
     node = Plus(
-        "+",
         Num(2),
-        Mul("*", Num(3), Num(4)),
+        Mul(Num(3), Num(4)),
     )
 
     assert ev.visit(node) == 14.0
@@ -50,9 +49,8 @@ def test_nested_expression(ev):
 def test_complex_expression(ev):
     # (10 - 2) * (9 / 3)
     node = Mul(
-        "*",
-        Minus("-", Num(10), Num(2)),
-        Div("/", Num(9), Num(3)),
+        Minus(Num(10), Num(2)),
+        Div(Num(9), Num(3)),
     )
 
     assert ev.visit(node) == 24.0
@@ -78,7 +76,7 @@ def test_parser_integration(ev, expr, expected):
 
 
 def test_division_by_zero(ev):
-    node = Div("/", Num(1), Num(0))
+    node = Div(Num(1), Num(0))
 
     with pytest.raises(ZeroDivisionError):
         ev.visit(node)
