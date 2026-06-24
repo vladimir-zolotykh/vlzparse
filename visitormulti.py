@@ -4,7 +4,7 @@
 from typing import MutableMapping, Any
 from types import MethodType
 import inspect
-from node import Node, Num, Plus, Minus, Mul, Div
+from node import Num, Plus, Minus, Mul, Div
 from parser import Parser
 
 
