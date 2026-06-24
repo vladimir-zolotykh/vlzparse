@@ -21,7 +21,7 @@ class Parser:
     def _expect(self, expected: str) -> None:
         if not self.token == expected:
             raise SyntaxError(f"Expected {expected}, got {self.token}")
-        self._consume()
+        self._advance()
 
     def _consume(self) -> None:
         self.token = next(self.tokens)
