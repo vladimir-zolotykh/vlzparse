@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# PYTHON_ARGCOMPLETE_OK
+from typing import MutableMapping, Any
+from types import MethodType
+import inspect
+from node import Node, Num, Plus, Minus, Mul, Div
+from parser import Parser
+
+
+class Method:
+    def __init__(self, name):
+        self._name = name
+        self._types = tuple()
+        self.methods = {}
+
+    def register(self, func):
+        sig = inspect.signature(func)
+        _types = tuple()
+        defaults: int = 0
+        for k, p in sig.parameters.items():
+            if k == "self":
+                continue
+            _types = _types + (p.annotation,)
+            defaults += p.default is not inspect._empty
+        _types = tuple(_types)
+        self.methods[_types] = func
+        if defaults > 0:
+            _types = _types[:-defaults]
+        self.methods[_types] = func
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        return MethodType(self, instance)
+
+    def __call__(self, *args):
+        _types = tuple(type(a) for a in args[1:])
+        return self.methods[_types](*args)
+
+
+class Map(dict):
+    def __setitem__(self, key, val):
+        if key not in self:
+            super().__setitem__(key, val)
+            return
+        oval = self[key]
+        if isinstance(oval, Method):
+            mm: Method = oval
+            oval.register(val)
+        else:
+            mm = Method(key)
+            mm.register(oval)
+            mm.register(val)
+        super().__setitem__(key, mm)
+
+
+class MethodMeta(type):
+    @classmethod
+    def __prepare__(
+        mcls, clsname: str, bases: tuple[type, ...], /, **kwargs: Any
+    ) -> MutableMapping[str, object]:
+        return Map()
+
+
+class Evaluator(metaclass=MethodMeta):
+    def visit(self, n: Num) -> float:
+        return float(n.val)
+
+    def visit(self, n: Plus) -> float:  # noqa: F811
+        return self.visit(n.left) + self.visit(n.right)
+
+    def visit(self, n: Minus) -> float:  # noqa: F811
+        return self.visit(n.left) - self.visit(n.right)
+
+    def visit(self, n: Mul) -> float:  # noqa: F811
+        return self.visit(n.left) * self.visit(n.right)
+
+    def visit(self, n: Div) -> float:  # noqa: F811
+        return self.visit(n.left) / self.visit(n.right)
+
+
+if __name__ == "__main__":
+    expr = "2 + (3 * 4) + 5"
+    print(f"{expr = }, {eval(expr) = }")
+    print(Evaluator().visit(Parser().parse(expr)))
