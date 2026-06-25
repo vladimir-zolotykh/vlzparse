@@ -17,17 +17,15 @@ class Method:
     def register(self, func):
         sig = inspect.signature(func)
         _types: tuple[type, ...] = tuple()
-        typesdefault: tuple[type, ...] = tuple()
         for k, p in sig.parameters.items():
             if k == "self":
                 continue
             if p.annotation is inspect._empty:
                 raise TypeError("All parameters must be annotated")
+            if p.default is not inspect._empty:
+                self.methods[_types] = func
             _types = _types + (p.annotation,)
-            if p.default is inspect._empty:
-                typesdefault = typesdefault + (p.annotation,)
-                self.methods[typesdefault] = func
-        self.methods[_types] = func
+            self.methods[_types] = func
 
     def __get__(self, instance, owner=None):
         if instance is None:
