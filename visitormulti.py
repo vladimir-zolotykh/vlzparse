@@ -21,9 +21,10 @@ class Method:
         for k, p in sig.parameters.items():
             if k == "self":
                 continue
+            if p.annotation is inspect._empty:
+                raise TypeError("All parameters must be annotated")
             _types = _types + (p.annotation,)
             defaults += p.default is not inspect._empty
-        _types = tuple(_types)
         self.methods[_types] = func
         if defaults > 0:
             _types = _types[:-defaults]
