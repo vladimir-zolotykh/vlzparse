@@ -2,20 +2,48 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 # mypy: disable-error-code=no-redef
-from typing import MutableMapping, Any, Callable
+from typing import MutableMapping, Any, Callable, get_type_hints
 from types import MethodType
 import inspect
 from node import Num, Plus, Minus, Mul, Div
 from parser import Parser
 
 
+class MethodTup:
+    def __init__(self, name):
+        self._name = name
+        self.methods = {}
+
+    def register(self, func):
+        sig = inspect.signature(func)
+        _types: tuple[type, ...] = tuple()
+        for k, p in sig.parameters.items():
+            if k == "self":
+                continue
+            if p.annotation is inspect._empty:
+                raise TypeError("All parameters must be annotated")
+            if p.default is not inspect._empty:
+                self.methods[_types] = func
+            _types = _types + (p.annotation,)
+            self.methods[_types] = func
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        return MethodType(self, instance)
+
+    def __call__(self, *args):
+        _types = tuple(type(a) for a in args[1:])
+        return self.methods[_types](*args)
+
+
 class MethodSig:
     def __init__(self, name):
         self._name = name
-        self.signatures: list[tuple[inspect.Signature, Callable]] = []
+        self.signatures: list[Callable] = []
 
     def register(self, func):
-        self.signatures.append((inspect.signature(func), func))
+        self.signatures.append(func)
 
     def __get__(self, instance, owner=None):
         if instance is None:
@@ -25,14 +53,31 @@ class MethodSig:
     def __call__(self, *args):
         sig: inspect.Signature
         func: Callable
-        for sig, func in self.signatures:
-            try:
-                ba: inspect.BoundArguments = sig.bind(*args)
+        try:
+            for func in self.signatures:
+                hints: dict[str, type] = get_type_hints(func)
+                sig: inspect.Signature = inspect.signature(func)
+                for name, parm in sig.parameters.items():
+                    if name == "self":
+                        continue
+                    if parm.annotation is inspect._empty:
+                        raise TypeError(
+                            f"All parameters of {func.__name__} must be annotated"
+                        )
+                    if name not in hints:
+                        continue
+                    expected: type = hints[name]
+                    if parm.annotation is not expected:
+                        raise TypeError(f"type of {name} must match {expected}")
+                ba = sig.bind(*args)
                 ba.apply_defaults()
                 return func(*ba.args)
-            except TypeError:
-                continue  # try next (sig, func) in signatures
-        raise TypeError(f"No matching method {self._name} for {ba}")
+        except TypeError as exc:
+            raise TypeError(f"No matching {args} method {self._name} found") from exc
+
+
+# Method = MethodTup
+Method = MethodSig
 
 
 class Map(dict):
@@ -41,11 +86,11 @@ class Map(dict):
             super().__setitem__(key, val)
             return
         oval = self[key]
-        if isinstance(oval, MethodSig):
-            mm: MethodSig = oval
+        if isinstance(oval, Method):
+            mm: Method = oval
             oval.register(val)
         else:
-            mm = MethodSig(key)
+            mm = Method(key)
             mm.register(oval)
             mm.register(val)
         super().__setitem__(key, mm)
