@@ -2,30 +2,20 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 # mypy: disable-error-code=no-redef
-from typing import MutableMapping, Any
+from typing import MutableMapping, Any, Callable
 from types import MethodType
 import inspect
 from node import Num, Plus, Minus, Mul, Div
 from parser import Parser
 
 
-class Method:
+class MethodSig:
     def __init__(self, name):
         self._name = name
-        self.methods = {}
+        self.signatures: list[tuple[inspect.Signature, Callable]] = []
 
     def register(self, func):
-        sig = inspect.signature(func)
-        _types: tuple[type, ...] = tuple()
-        for k, p in sig.parameters.items():
-            if k == "self":
-                continue
-            if p.annotation is inspect._empty:
-                raise TypeError("All parameters must be annotated")
-            if p.default is not inspect._empty:
-                self.methods[_types] = func
-            _types = _types + (p.annotation,)
-            self.methods[_types] = func
+        self.signatures.append((inspect.signature(func), func))
 
     def __get__(self, instance, owner=None):
         if instance is None:
@@ -33,8 +23,16 @@ class Method:
         return MethodType(self, instance)
 
     def __call__(self, *args):
-        _types = tuple(type(a) for a in args[1:])
-        return self.methods[_types](*args)
+        sig: inspect.Signature
+        func: Callable
+        for sig, func in self.signatures:
+            try:
+                ba: inspect.BoundArguments = sig.bind(*args)
+                ba.apply_defaults()
+                return func(*ba.args)
+            except TypeError:
+                continue  # try next (sig, func) in signatures
+        raise TypeError(f"No matching method {self._name} for {ba}")
 
 
 class Map(dict):
@@ -43,11 +41,11 @@ class Map(dict):
             super().__setitem__(key, val)
             return
         oval = self[key]
-        if isinstance(oval, Method):
-            mm: Method = oval
+        if isinstance(oval, MethodSig):
+            mm: MethodSig = oval
             oval.register(val)
         else:
-            mm = Method(key)
+            mm = MethodSig(key)
             mm.register(oval)
             mm.register(val)
         super().__setitem__(key, mm)
