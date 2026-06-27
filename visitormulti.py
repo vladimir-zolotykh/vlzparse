@@ -2,39 +2,11 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 # mypy: disable-error-code=no-redef
-from typing import MutableMapping, Any, Callable, get_type_hints
+from typing import MutableMapping, Any, Callable
 from types import MethodType
 import inspect
-from node import Num, Plus, Minus, Mul, Div, Node
+from node import Num, Plus, Minus, Mul, Div
 from parser import Parser
-
-
-class MethodTup:
-    def __init__(self, name):
-        self._name = name
-        self.methods = {}
-
-    def register(self, func):
-        sig = inspect.signature(func)
-        _types: tuple[type, ...] = tuple()
-        for k, p in sig.parameters.items():
-            if k == "self":
-                continue
-            if p.annotation is inspect._empty:
-                raise TypeError("All parameters must be annotated")
-            if p.default is not inspect._empty:
-                self.methods[_types] = func
-            _types = _types + (p.annotation,)
-            self.methods[_types] = func
-
-    def __get__(self, instance, owner=None):
-        if instance is None:
-            return self
-        return MethodType(self, instance)
-
-    def __call__(self, *args):
-        _types = tuple(type(a) for a in args[1:])
-        return self.methods[_types](*args)
 
 
 def bind_typed(sig: inspect.Signature, *args, **kwargs) -> inspect.BoundArguments:
@@ -56,7 +28,7 @@ def bind_typed(sig: inspect.Signature, *args, **kwargs) -> inspect.BoundArgument
     return ba
 
 
-class MethodSig:
+class Method:
     def __init__(self, name):
         self._name = name
         self.signatures: list[Callable] = []
@@ -70,6 +42,7 @@ class MethodSig:
         return MethodType(self, instance)
 
     def __call__(self, *args, **kwargs):
+        last_exc: TypeError = None
         sig: inspect.Signature
         func: Callable
         for func in self.signatures:
@@ -84,13 +57,9 @@ class MethodSig:
                         )
                     ba = bind_typed(sig, *args, **kwargs)
                     return func(*ba.args, **ba.kwargs)
-            except TypeError:
-                pass
-        raise TypeError(f"No matching {args} method {self._name} found") from exc
-
-
-# Method = MethodTup
-Method = MethodSig
+            except TypeError as exc:
+                last_exc = exc
+        raise TypeError(f"No matching {args} method {self._name} found") from last_exc
 
 
 class Map(dict):
