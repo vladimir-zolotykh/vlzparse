@@ -5,7 +5,7 @@
 from typing import MutableMapping, Any, Callable, get_type_hints
 from types import MethodType
 import inspect
-from node import Num, Plus, Minus, Mul, Div
+from node import Num, Plus, Minus, Mul, Div, Node
 from parser import Parser
 
 
@@ -37,6 +37,25 @@ class MethodTup:
         return self.methods[_types](*args)
 
 
+def bind_typed(sig: inspect.Signature, *args, **kwargs) -> inspect.BoundArguments:
+    ba = sig.bind(*args, **kwargs)
+    ba.apply_defaults()
+
+    for name, value in ba.arguments.items():
+        param = sig.parameters[name]
+        ann = param.annotation
+
+        if ann is inspect._empty:
+            continue
+
+        if not isinstance(value, ann):
+            raise TypeError(
+                f"{name}: expected {ann.__name__}, got {type(value).__name__}"
+            )
+
+    return ba
+
+
 class MethodSig:
     def __init__(self, name):
         self._name = name
@@ -50,12 +69,11 @@ class MethodSig:
             return self
         return MethodType(self, instance)
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         sig: inspect.Signature
         func: Callable
-        try:
-            for func in self.signatures:
-                hints: dict[str, type] = get_type_hints(func)
+        for func in self.signatures:
+            try:
                 sig: inspect.Signature = inspect.signature(func)
                 for name, parm in sig.parameters.items():
                     if name == "self":
@@ -64,16 +82,11 @@ class MethodSig:
                         raise TypeError(
                             f"All parameters of {func.__name__} must be annotated"
                         )
-                    if name not in hints:
-                        continue
-                    expected: type = hints[name]
-                    if parm.annotation is not expected:
-                        raise TypeError(f"type of {name} must match {expected}")
-                ba = sig.bind(*args)
-                ba.apply_defaults()
-                return func(*ba.args)
-        except TypeError as exc:
-            raise TypeError(f"No matching {args} method {self._name} found") from exc
+                    ba = bind_typed(sig, *args, **kwargs)
+                    return func(*ba.args, **ba.kwargs)
+            except TypeError:
+                pass
+        raise TypeError(f"No matching {args} method {self._name} found") from exc
 
 
 # Method = MethodTup
